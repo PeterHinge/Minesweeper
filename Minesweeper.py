@@ -111,7 +111,6 @@ def ai_player(lst, square):
             if is_inside_table(size_of_board, tile[0], tile[1]):
                 if not lst[tile[0]][tile[1]].visible:
                     pygame.mouse.set_pos([tile[0] * 20 + 10, tile[1] * 20 + 10])
-                    time.sleep(3)
                     lst[tile[0]][tile[1]].flag = True
     adjacent_flags = 0
     for tile in adjacent_tiles:
@@ -123,7 +122,6 @@ def ai_player(lst, square):
             if is_inside_table(size_of_board, tile[0], tile[1]):
                 if not lst[tile[0]][tile[1]].visible and not lst[tile[0]][tile[1]].flag:
                     pygame.mouse.set_pos([tile[0] * 20 + 10, tile[1] * 20 + 10])
-                    time.sleep(3)
                     lst[tile[0]][tile[1]].visible = True
     return lst
 
@@ -186,12 +184,8 @@ def game(size, mines):
                     for j in i:
                         if j.visible:
                             ai_player(lst, j)
-                            time.sleep(3)
-                            print("3")
-
-
-
-
+                lst[random.randint(0, size_of_board - 1)][random.randint(0, size_of_board - 1)].visible = True
+                pygame.display.update()
 
 
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left mouse-click event
