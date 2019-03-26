@@ -7,4 +7,5 @@ Plan:
 
 _______________________________________________________
 Log:
-2019-03-25: Finished up minesweeper without computer play. Will programthe AI tomorrow.
+2019-03-25: Finished up minesweeper without computer play. Will program the AI tomorrow.
+2019-03-26: Did rule based computer play. Will clean up code tomorrow. EDIT: found a better way to do AI - will do that tomorrow.
