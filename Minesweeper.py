@@ -1,5 +1,4 @@
 import random
-import time
 
 import pygame
 
@@ -19,7 +18,7 @@ def generate_table(n):  # Creates a table with the specified parameters
     return [[0] * n for i in range(n)]
 
 
-def add_mines(table, mines):
+def add_mines(table, mines):  # Add mines randomly to the table
     for i in range(mines):
         is_mine = False
         while not is_mine:
@@ -44,7 +43,7 @@ def adjust_table(table):  # Checks the surrounding cells clockwise and adjusts t
     return table
 
 
-def get_adjacent_tiles(x, y):
+def get_adjacent_tiles(x, y):  # Checks and return adjacent tiles
     neighbours = [[1, 1], [1, 0], [1, -1], [0, 1], [0, -1], [-1, 1], [-1, 0], [-1, -1]]
     adjacent_tiles = []
     for coordinate in neighbours:
@@ -53,11 +52,11 @@ def get_adjacent_tiles(x, y):
     return adjacent_tiles
 
 
-def is_inside_table(table_length, x, y):
+def is_inside_table(table_length, x, y):  # Checks if tile is inside the game table
     return 0 <= x <= table_length - 1 and 0 <= y <= table_length - 1
 
 
-def is_bomb(table, x, y):
+def is_bomb(table, x, y):  # Checks if tile is a bomb
     return table[x][y] == 9
 
 
@@ -67,7 +66,6 @@ class Board:
 
     def __repr__(self):
         print(self.board)
-        return "Statement"
 
 
 class Square:
@@ -81,11 +79,11 @@ class Square:
         self.flag = False
 
 
-def restart(size, mines):
+def restart(size, mines):  # Restarts game
     game(size, mines)
 
 
-def open_game(lst, square):
+def open_game(lst, square):  # Opens up the game if the clicked on tile has no adjacent mines
     square.visible = True
     x, y = square.x // 20, square.y // 20
     adjacent_tiles = get_adjacent_tiles(x, y)
@@ -98,7 +96,7 @@ def open_game(lst, square):
     return lst
 
 
-def ai_player(lst, square):
+def ai_player(lst, square):  # Rule based AI
     x, y = square.x // 20, square.y // 20
     adjacent_tiles = get_adjacent_tiles(x, y)
     adjacent_mines = square.val
@@ -127,7 +125,7 @@ def ai_player(lst, square):
     return lst
 
 
-def game(size, mines):
+def game(size, mines):  # Main game
 
     grey = pygame.image.load("grey.png")
 
@@ -146,14 +144,14 @@ def game(size, mines):
 
     numbers = [emtpy, one, two, three, four, five, six, seven, eight, bomb]
 
-    spil = Board(setup(size, mines))
+    spil = Board(setup(size, mines))  # Initializes game
     w = h = len(spil.board) * 20
 
     screen = pygame.display.set_mode((w, h))
 
     lst = [[] for i in range(size)]
 
-    for i in range(0, size * 20, 20):
+    for i in range(0, size * 20, 20):  # Creates graphical cover of grey squares
         for j in range(0, size * 20, 20):
             lst[i // 20] += [Square(i, j, 20, 20, spil.board, (i // 20, j // 20))]
             screen.blit(grey, (i, j))
@@ -224,7 +222,7 @@ def game(size, mines):
                         print("Press 'r' to try again or close the window to exit!")
                         exit_game = True
 
-        for i in lst:
+        for i in lst:  # Displays board
             for j in i:
                 if j.visible:
                     screen.blit(numbers[j.val], (j.x, j.y))
@@ -241,7 +239,7 @@ def game(size, mines):
                 if j.visible and j.val != 9:
                     open_square_count += 1
 
-            if open_square_count == size * size - mines:
+            if open_square_count == size * size - mines:  # Checks if all non-mine squares are open
                 exit_game = True
                 print("You Win!")
         pygame.display.update()
@@ -255,7 +253,7 @@ def game(size, mines):
     pygame.display.update()
 
     exit_game = False
-    while not exit_game:
+    while not exit_game:  # Waiting screen
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit_game = True
@@ -267,7 +265,7 @@ def game(size, mines):
                     restart(size, mines)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # Main initialize
     print("Welcome to 'Danish Minesweeper' by Peter Hinge.")
     size_of_board = int(input("Please put in how big you want the board to be: "))
     num_of_mines = (size_of_board * size_of_board) // 7
