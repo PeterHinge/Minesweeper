@@ -179,15 +179,6 @@ def game(size, mines):
                     elif ai_on:
                         ai_on = False
 
-            elif ai_on:
-                for i in lst:
-                    for j in i:
-                        if j.visible:
-                            ai_player(lst, j)
-                lst[random.randint(0, size_of_board - 1)][random.randint(0, size_of_board - 1)].visible = True
-                pygame.display.update()
-
-
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left mouse-click event
                 for i in lst:
                     for j in i:
@@ -213,6 +204,24 @@ def game(size, mines):
                                     j.flag = True
                                 elif j.flag:
                                     j.flag = False
+
+        if ai_on:  # AI play
+            start_board = lst
+            end_board = lst
+            for i in lst:
+                for j in i:
+                    if j.visible:
+                        end_board = ai_player(lst, j)
+            if start_board == end_board:
+                start_board = end_board
+                print(start_board)
+                open_random = lst[random.randint(0, size_of_board - 1)][random.randint(0, size_of_board - 1)]
+                if not open_random.visible and not open_random.flag:
+                    open_random.visible = True
+                    if open_random.val == 9:
+                        print("Game over!")
+                        print("Press 'r' to try again or close the window to exit!")
+                        exit_game = True
 
         for i in lst:
             for j in i:
@@ -240,6 +249,8 @@ def game(size, mines):
         for j in i:
             if j.val == 9:
                 screen.blit(bomb, (j.x, j.y))
+            if j.flag:
+                screen.blit(flag, (j.x, j.y))
     pygame.display.update()
 
     exit_game = False
