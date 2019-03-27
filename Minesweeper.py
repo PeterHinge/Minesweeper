@@ -178,31 +178,33 @@ def game(size, mines):  # Main game
                     elif ai_on:
                         ai_on = False
 
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left mouse-click event
-                for i in lst:
-                    for j in i:
-                        r = pygame.rect.Rect(pygame.mouse.get_pos(), (1, 1))
-                        if j.rect.colliderect(r):
-                            if not j.flag:
-                                if j.val == 9:
-                                    print("Game over!")
-                                    print("Press 'r' to try again or close the window to exit!")
-                                    exit_game = True
-                                j.visible = True
-                                if j.val == 0:
-                                    j.visible = open_game(lst, j)
-                                    j.visible = True
+            elif event.type == pygame.MOUSEBUTTONDOWN:  # Mouse-click event
 
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 3:  # Right mouse-click event
-                for i in lst:
-                    for j in i:
-                        r = pygame.rect.Rect(pygame.mouse.get_pos(), (1, 1))
-                        if j.rect.colliderect(r):
-                            if not j.visible:
+                if event.button == 1:  # Left mouse-click event
+                    for i in lst:
+                        for j in i:
+                            r = pygame.rect.Rect(pygame.mouse.get_pos(), (1, 1))
+                            if j.rect.colliderect(r):
                                 if not j.flag:
-                                    j.flag = True
-                                elif j.flag:
-                                    j.flag = False
+                                    if j.val == 9:
+                                        print("Game over!")
+                                        print("Press 'r' to try again or close the window to exit!")
+                                        exit_game = True
+                                    j.visible = True
+                                    if j.val == 0:
+                                        j.visible = open_game(lst, j)
+                                        j.visible = True
+
+                elif event.button == 3:  # Right mouse-click event
+                    for i in lst:
+                        for j in i:
+                            r = pygame.rect.Rect(pygame.mouse.get_pos(), (1, 1))
+                            if j.rect.colliderect(r):
+                                if not j.visible:
+                                    if not j.flag:
+                                        j.flag = True
+                                    elif j.flag:
+                                        j.flag = False
 
         if ai_on:  # AI play
             start_board = lst
