@@ -5,6 +5,7 @@ import pygame
 
 
 pygame.init()
+pygame.display.set_caption("Danish Minesweeper")
 
 
 def setup(n, mines):  # Sets up underlying game table
