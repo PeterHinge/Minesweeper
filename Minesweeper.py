@@ -7,15 +7,15 @@ pygame.init()
 pygame.display.set_caption("Danish Minesweeper")
 
 
-def setup(n, mines):  # Sets up underlying game table
-    table = generate_table(n)
+def setup(size, mines):  # Sets up underlying game table
+    table = generate_table(size)
     table = add_mines(table, mines)
     table = adjust_table(table)
     return table
 
 
-def generate_table(n):  # Creates a table with the specified parameters
-    return [[0] * n for i in range(n)]
+def generate_table(size):  # Creates a table with the specified parameters
+    return [[0] * size for i in range(size)]
 
 
 def add_mines(table, mines):  # Add mines randomly to the table
