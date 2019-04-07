@@ -9,45 +9,46 @@ pygame.display.set_caption("Danish Minesweeper")
 
 class Table:
 
-    def __init__(self, width, height, mines):
+    def __init__(self, width, height, mines, scale=20):
+        self.scale = scale
         self.width = width
         self.height = height
         self.mines = mines
-        self.scale = 20
+
+        self.display_x = self.width * self.scale
+        self.display_y = self.height * self.scale
+
         self.table = self.setup()
+        self.table = self.add_mines()
+        self.table = self.adjust_table()
 
     def __repr__(self):
         print(self.table)
 
     def setup(self):
-        table = [[[] for i in range(self.width)] for i in range(self.height)]
+        return [[Cell(x, y, self.scale) for x in range(self.height)] for y in range(self.width)]
 
-        for x in range(0, len(table)):
-            for y in range(0, len(table[x])):
-                table[x][y] = Cell(x, y, self.scale)
-
+    def add_mines(self):
         for i in range(self.mines):
             is_mine = False
             while not is_mine:
                 x = random.randint(0, self.width - 1)
                 y = random.randint(0, self.height - 1)
-                if table[x][y].val is not 9:
-                    table[x][y].val = 9
+                if self.table[x][y].val is not 9:
+                    self.table[x][y].val = 9
                     is_mine = True
+        return self.table
 
-        for x in range(len(table)):
-            for y in range(len(table[x])):
-                if table[x][y].val == 9:
+    def adjust_table(self):
+        for x in range(len(self.table)):
+            for y in range(len(self.table[x])):
+                if self.table[x][y].val == 9:
                     adjacent_tiles = get_adjacent_tiles(x, y)
                     for tile in adjacent_tiles:
                         if self.is_inside_table(tile[0], tile[1]):
-                            if not is_bomb(table, tile[0], tile[1]):
-                                table[tile[0]][tile[1]].val += 1
-
-        return table
-
-    def restart(self):  # Restarts game
-        self.setup()
+                            if not is_bomb(self.table, tile[0], tile[1]):
+                                self.table[tile[0]][tile[1]].val += 1
+        return self.table
 
     def is_inside_table(self, x, y):  # Checks if cell is inside the game table
         return 0 <= x <= self.width - 1 and 0 <= y <= self.height - 1
@@ -57,22 +58,27 @@ class Table:
         x, y = cell.x, cell.y
         adjacent_tiles = get_adjacent_tiles(x, y)
         for tile in adjacent_tiles:
-            if self.table.is_inside_table(tile[0], tile[1]):
+            if self.is_inside_table(tile[0], tile[1]):
                 if not self.table[tile[0]][tile[1]].visible and not self.table[tile[0]][tile[1]].flag:
-                    table[tile[0]][tile[1]].visible = True
+                    self.table[tile[0]][tile[1]].visible = True
                     if self.table[tile[0]][tile[1]].val == 0:  # Recursive step that ensures all white spaces are opened
-                        open_game(self.table, self.table[tile[0]][tile[1]])
+                        self.open_game(self.table[tile[0]][tile[1]])
 
 
 class Cell:
     def __init__(self, x, y, scale):
-        self.x = x * scale
-        self.y = y * scale
-        self.rect = pygame.rect.Rect(x, y, scale, scale)
+        self.x = x
+        self.y = y
+        self.width = x * scale
+        self.height = y * scale
+        self.rect = pygame.rect.Rect(x, y, self.width, self.height)
 
         self.val = 0
         self.visible = False
         self.flag = False
+
+    def __repr__(self):
+        print(self.rect)
 
 
 def get_adjacent_tiles(x, y):  # Checks and return adjacent tiles
@@ -85,6 +91,10 @@ def get_adjacent_tiles(x, y):  # Checks and return adjacent tiles
 
 def is_bomb(table, x, y):  # Checks if tile is a bomb
     return table[x][y] == 9
+
+
+def restart(width, height, mines):  # Restarts game
+    game(width, height, mines)
 
 
 def game(width, height, mines):  # Main game
@@ -108,11 +118,7 @@ def game(width, height, mines):  # Main game
 
     board = Table(width, height, mines)  # Initializes board
 
-    screen = pygame.display.set_mode((board.width, board.height))
-
-    for x in range(0, board.width * board.scale, board.scale):  # Creates graphical cover of grey squares
-        for y in range(0, board.height * board.scale, board.scale):
-            screen.blit(grey, (x, y))
+    screen = pygame.display.set_mode((board.display_x, board.display_y))
 
     ai_on = False
 
@@ -128,7 +134,7 @@ def game(width, height, mines):  # Main game
 
                 if event.key == pygame.K_r:  # Restart game event
                     exit_game = True
-                    board.restart()
+                    restart(width, height, mines)
 
                 elif event.key == pygame.K_c:  # Turn AI on/off event
                     if not ai_on:
@@ -150,13 +156,15 @@ def game(width, height, mines):  # Main game
                                         exit_game = True
                                     j.visible = True
                                     if j.val == 0:
-                                        j.visible = board.table.open_game(j)
+                                        board.open_game(j)
                                         j.visible = True
 
                 elif event.button == 3:  # Right mouse-click event
                     for i in board.table:
                         for j in i:
                             r = pygame.rect.Rect(pygame.mouse.get_pos(), (1, 1))
+                            print(j.rect)
+                            print(r)
                             if j.rect.colliderect(r):
                                 if not j.visible:
                                     if not j.flag:
@@ -184,14 +192,18 @@ def game(width, height, mines):  # Main game
 
         for i in board.table:  # Displays board
             for j in i:
-                if j.visible:
-                    screen.blit(numbers[j.val], (j.x, j.y))
+                try:
+                    if j.visible:
+                        print(j.val)
+                        screen.blit(numbers[j.val], (j.width, j.height))
 
-                if j.flag:
-                    screen.blit(flag, (j.x, j.y))
+                    if j.flag:
+                        screen.blit(flag, (j.width, j.height))
 
-                if not j.flag and not j.visible:
-                    screen.blit(grey, (j.x, j.y))
+                    if not j.flag and not j.visible:
+                        screen.blit(grey, (j.width, j.height))
+                except:
+                    continue
 
         open_square_count = 0
         for i in board.table:
@@ -207,9 +219,9 @@ def game(width, height, mines):  # Main game
     for i in board.table:
         for j in i:
             if j.val == 9:
-                screen.blit(bomb, (j.x, j.y))
+                screen.blit(bomb, (j.width, j.height))
             if j.flag:
-                screen.blit(flag, (j.x, j.y))
+                screen.blit(flag, (j.width, j.height))
     pygame.display.update()
 
     exit_game = False
@@ -222,7 +234,7 @@ def game(width, height, mines):  # Main game
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     exit_game = True
-                    restart(size, mines)
+                    restart(width, height, mines)
 
 
 if __name__ == "__main__":  # Main initialize
