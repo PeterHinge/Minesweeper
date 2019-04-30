@@ -84,7 +84,6 @@ def restart(size, mines):  # Restarts game
 
 
 def open_game(lst, square):  # Opens up the game if the clicked on tile has no adjacent mines
-    square.visible = True
     x, y = square.x // 20, square.y // 20
     adjacent_tiles = get_adjacent_tiles(x, y)
     for tile in adjacent_tiles:
@@ -192,8 +191,7 @@ def game(size, mines):  # Main game
                                         exit_game = True
                                     j.visible = True
                                     if j.val == 0:
-                                        j.visible = open_game(lst, j)
-                                        j.visible = True
+                                        open_game(lst, j)
 
                 elif event.button == 3:  # Right mouse-click event
                     for i in lst:
