@@ -2,6 +2,8 @@ import random
 import itertools
 import pygame
 
+import time
+
 
 class Minefield:
 
@@ -106,57 +108,109 @@ def two_rule_ai(board, cell):  # Rule based AI
         for tile in adjacent_tiles:
             if board.is_inside_table(tile[0], tile[1]):
                 if not board.table[tile[1]][tile[0]].visible:
-                    pygame.mouse.set_pos([tile[0] * 20 + 10, tile[1] * 20 + 10])
                     board.table[tile[1]][tile[0]].flag = True
 
     if adjacent_mines == adjacent_flags:  # Second Rule: Opens squares if adjacent flags and adjacent mines are same
         for tile in adjacent_tiles:
             if board.is_inside_table(tile[0], tile[1]):
                 if not board.table[tile[1]][tile[0]].visible and not board.table[tile[1]][tile[0]].flag:
-                    pygame.mouse.set_pos([tile[0] * 20 + 10, tile[1] * 20 + 10])
                     board.table[tile[1]][tile[0]].visible = True
-
-    if adjacent_mines > adjacent_flags:
-        return False
 
     return board
 
 
-def optimal_choice_ai(board, unopened_cells):  # Probabilistic AI
-    possible_board = board
-    possible_cells = unopened_cells
-    for cell in possible_cells:
-        print(cell.val)
-    possible_states = list(itertools.product([True, False], repeat=len(possible_cells)))
+def optimal_choice_ai(board, unopened_cells, unopened_neighbours, mines_left):  # Probabilistic AI
+
+    possible_states = list(itertools.product([True, False], repeat=len(unopened_cells)))
     valid_possible_states = []
-    for state in possible_states:
+
+    for state in possible_states[1:-1]:
+
+        check_if_valid = True
+
+        possible_board = board
+        possible_cells = unopened_cells
+        possible_neighbours = unopened_neighbours
+
         for i in range(len(state)):
             possible_cells[i].flag = state[i]
 
-        check_if_valid = True
-        print('1000')
         for cell in possible_cells:
-            possible_board.table[cell.y][cell.x] = cell
-            adjacent_tiles = get_adjacent_tiles(cell.x, cell.y)
+            possible_board.table[cell.y][cell.x].flag = cell.flag
+
+        for neighbour in possible_neighbours:
+
+            count_flags = 0
+            adjacent_tiles = get_adjacent_tiles(neighbour.x, neighbour.y)
 
             for tile in adjacent_tiles:
                 if possible_board.is_inside_table(tile[0], tile[1]):
-                    if possible_board.table[tile[1]][tile[0]].visible:
-                        if not two_rule_ai(possible_board, possible_board.table[tile[1]][tile[0]]):
-                            check_if_valid = False
+                    if possible_board.table[tile[1]][tile[0]].flag:
+                        count_flags += 1
+
+            if neighbour.val != count_flags:
+                check_if_valid = False
+                break
+
+        check_for_mine_overflow = 0
+        for value in state:
+            if value:
+                check_for_mine_overflow += 1
+
+        if check_for_mine_overflow > mines_left:
+            check_if_valid = False
 
         if check_if_valid:
-            valid_possible_states.append(possible_cells)
+            valid_possible_states.append(state)
 
-    print(len(valid_possible_states))
+    if len(valid_possible_states) == 1:
 
+        for state in valid_possible_states:
 
+            for i in range(len(state)):
+                unopened_cells[i].flag = state[i]
 
+            for cell in unopened_cells:
+                print([cell.x, cell.y])
+                board.table[cell.y][cell.x].flag = cell.flag
 
+            print("one solu")
+            return board
 
+    lowest_change_of_mine_list = []
+    lowest_change_of_mine_cell = (0, 100)
 
+    if len(valid_possible_states) is not 0:
+        lowest_change_of_mine_list = [0 for i in range(len(valid_possible_states[0]))]
 
-    return board
+    for state in valid_possible_states:
+        for i, value in enumerate(state):
+            if value:
+                lowest_change_of_mine_list[i] += 1
+
+    if len(valid_possible_states) is not 0:
+        for i, chance in enumerate(lowest_change_of_mine_list):
+            for cell in unopened_cells:
+                board.table[cell.y][cell.x].flag = False
+
+            if chance == 0:
+                board.table[unopened_cells[i].y][unopened_cells[i].x].visible = True
+                print("0%: " + str([unopened_cells[i].x, unopened_cells[i].y]))
+
+            if chance == len(valid_possible_states):
+                board.table[unopened_cells[i].y][unopened_cells[i].x].flag = True
+                print("100%: " + str([unopened_cells[i].x, unopened_cells[i].y]))
+
+            if chance < lowest_change_of_mine_cell[1]:
+                lowest_change_of_mine_cell = (i, chance)
+
+        if 0 in lowest_change_of_mine_list or len(valid_possible_states) in lowest_change_of_mine_list:
+            return board
+
+        else:
+            board.table[unopened_cells[lowest_change_of_mine_cell[0]].y][unopened_cells[lowest_change_of_mine_cell[0]].x].visible = True
+            print("50%: " + str([unopened_cells[lowest_change_of_mine_cell[0]].x, unopened_cells[lowest_change_of_mine_cell[0]].y]))
+            return board
 ########################################################################################################################
 
 
@@ -173,7 +227,7 @@ def game(width, height, mines):  # Main game
 
     ai_on = False
 
-    second_ai = True
+    ai_visited_cells = []
 
     exit_game = False
     while not exit_game:
@@ -253,36 +307,120 @@ def game(width, height, mines):  # Main game
                 board.table[height // 2][width // 2].visible = True
                 first_move = False
 
+            for row in board.table:
+                for cell in row:
+                    if cell not in ai_visited_cells:
+                        if cell.visible:
+
+                            if cell.val != 0:
+                                two_rule_ai(board, cell)
+
+                            elif cell.val == 0:
+                                board.open_game(cell)
+
+                            check_adjacent_tiles = True
+                            adjacent_tiles = get_adjacent_tiles(cell.x, cell.y)
+                            for tile in adjacent_tiles:
+                                if board.is_inside_table(adjacent_tiles[0][0], adjacent_tiles[0][1]):
+                                    if not board.table[tile[1]][tile[0]].visible and not board.table[tile[1]][tile[0]].flag:
+                                        check_adjacent_tiles = False
+
+                            if check_adjacent_tiles:
+                                ai_visited_cells.append(cell)
+
+                        if cell.flag:
+
+                            check_adjacent_tiles = True
+                            adjacent_tiles = get_adjacent_tiles(cell.x, cell.y)
+                            for tile in adjacent_tiles:
+                                if board.is_inside_table(adjacent_tiles[0][0], adjacent_tiles[0][1]):
+                                    if not board.table[tile[1]][tile[0]].visible and not board.table[tile[1]][tile[0]].flag:
+                                        check_adjacent_tiles = False
+
+                            if check_adjacent_tiles:
+                                ai_visited_cells.append(cell)
+
             current_open_cell_count = 0
+            current_flag_count = 0
 
             for row in board.table:
                 for cell in row:
-
                     if cell.visible:
                         current_open_cell_count += 1
+                    if cell.flag:
+                        current_flag_count += 1
 
-                        if cell.val != 0:
-                            two_rule_ai(board, cell)
+            if current_open_cell_count == open_cell_count and current_flag_count == flag_count:
 
-                        elif cell.val == 0:
-                            board.open_game(cell)
+                if current_flag_count == mines and len(ai_visited_cells) != width_of_board * height_of_board:
+                    print(len(ai_visited_cells) - width_of_board * height_of_board)
+                    print("surrunded by mines")
 
-            if current_open_cell_count == open_cell_count and second_ai:
+                    for row in board.table:
+                        for cell in row:
+                            if not cell.visible and not cell.flag:
+                                cell.visible = True
 
+                mines_left = num_of_mines - current_flag_count
                 unopened_cells = []
+                unopened_neighbours = []
 
                 for row in board.table:
                     for cell in row:
-                        if not cell.visible and not cell.flag:
-                            adjacent_tiles = get_adjacent_tiles(cell.x, cell.y)
-                            for tile in adjacent_tiles:
-                                if board.is_inside_table(tile[0], tile[1]):
-                                    if board.table[tile[1]][tile[0]].visible:
-                                        if cell not in unopened_cells:
-                                            unopened_cells.append(cell)
+                        if cell not in ai_visited_cells:
+                            if not cell.visible and not cell.flag:
+                                adjacent_tiles = get_adjacent_tiles(cell.x, cell.y)
+                                for tile in adjacent_tiles:
+                                    if board.is_inside_table(tile[0], tile[1]):
+                                        if board.table[tile[1]][tile[0]].visible:
+                                            if cell not in unopened_cells:
+                                                unopened_cells.append(cell)
+                                            if board.table[tile[1]][tile[0]] not in unopened_neighbours:
+                                                unopened_neighbours.append(board.table[tile[1]][tile[0]])
 
-                optimal_choice_ai(board, unopened_cells)
-                second_ai = False
+                unopened_neighbour_groups = []
+
+                while len(unopened_neighbours) != 0:
+                    current_neighbour_group = [unopened_neighbours[0]]
+                    current_cell = None
+
+                    while len(current_neighbour_group) < 15 and current_cell != current_neighbour_group[-1]:
+                        current_cell = current_neighbour_group[-1]
+                        adjacent_tiles = get_adjacent_tiles(current_neighbour_group[-1].x, current_neighbour_group[-1].y)
+                        for tile in adjacent_tiles:
+                            if board.is_inside_table(tile[0], tile[1]):
+                                if board.table[tile[1]][tile[0]] in unopened_neighbours:
+                                    current_neighbour_group.append(board.table[tile[1]][tile[0]])
+
+                    unopened_neighbour_groups.append(current_neighbour_group)
+                    for cell in unopened_neighbours:
+                        if cell in unopened_neighbour_groups[-1]:
+                            unopened_neighbours.remove(cell)
+
+                unopened_groups = []
+
+                for group in unopened_neighbour_groups:
+                    current_group = []
+                    for cell in group:
+                        adjacent_tiles = get_adjacent_tiles(cell.x, cell.y)
+                        for tile in adjacent_tiles:
+                            if board.is_inside_table(tile[0], tile[1]):
+                                if board.table[tile[1]][tile[0]] in unopened_cells:
+                                    if board.table[tile[1]][tile[0]] not in current_group:
+                                        current_group.append(board.table[tile[1]][tile[0]])
+                    unopened_groups.append(current_group)
+
+                for i, group in enumerate(unopened_groups):
+                    optimal_choice_ai(board, unopened_cells, unopened_neighbour_groups[i], mines_left)
+                    for row in board.table:
+                        for cell in row:
+                            if cell.visible and cell.val == 9:
+                                print("Game over!")
+                                print("Press 'r' to try again or close the window to exit!")
+                                exit_game = True
+
+
+
 
         for row in board.table:  # Displays board
             for cell in row:
@@ -292,10 +430,10 @@ def game(width, height, mines):  # Main game
                     if cell.visible:
                         screen.blit(numbers[cell.val], (cell.width, cell.height))
 
-                    if cell.flag:
+                    elif cell.flag:
                         screen.blit(flag, (cell.width, cell.height))
 
-                    if not cell.flag and not cell.visible:
+                    elif not cell.flag and not cell.visible:
                         screen.blit(grey, (cell.width, cell.height))
 
                 else:
