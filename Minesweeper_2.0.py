@@ -352,10 +352,10 @@ def game(width, height, mines):  # Main game
 
             if current_open_cell_count == open_cell_count and current_flag_count == flag_count:
 
-                if current_flag_count == mines and len(ai_visited_cells) != width_of_board * height_of_board:
-                    print(len(ai_visited_cells) - width_of_board * height_of_board)
-                    print("surrunded by mines")
+                time.sleep(3)
 
+                if current_flag_count == mines and len(ai_visited_cells) != width_of_board * height_of_board:
+                    print("surrounded by mines")
                     for row in board.table:
                         for cell in row:
                             if not cell.visible and not cell.flag:
@@ -378,6 +378,38 @@ def game(width, height, mines):  # Main game
                                             if board.table[tile[1]][tile[0]] not in unopened_neighbours:
                                                 unopened_neighbours.append(board.table[tile[1]][tile[0]])
 
+                unopened_groups = []
+                unopened_neighbour_groups = []
+
+                if len(unopened_cells) < 15:
+                    unopened_groups = [unopened_cells]
+                    unopened_neighbour_groups = [unopened_neighbours]
+
+                else:
+                    current_group = []
+                    while len(unopened_cells) != 0:
+                        current_group.append(unopened_cells[0])
+                        unopened_cells.remove(unopened_cells[0])
+                        if len(current_group) == 15:
+                            unopened_groups.append(current_group)
+                            current_group = []
+
+                    unopened_groups.append(current_group)
+
+                for group in unopened_groups:
+                    current_neighbour_group = []
+                    for cell in group:
+                        adjacent_tiles = get_adjacent_tiles(cell.x, cell.y)
+                        for tile in adjacent_tiles:
+                            if board.is_inside_table(tile[0], tile[1]):
+                                if board.table[tile[1]][tile[0]].visible:
+                                    if board.table[tile[1]][tile[0]] not in current_neighbour_group:
+                                        current_neighbour_group.append(board.table[tile[1]][tile[0]])
+                    unopened_neighbour_groups.append(current_neighbour_group)
+
+                """
+                # Second way of separating
+                
                 unopened_neighbour_groups = []
 
                 while len(unopened_neighbours) != 0:
@@ -409,18 +441,20 @@ def game(width, height, mines):  # Main game
                                     if board.table[tile[1]][tile[0]] not in current_group:
                                         current_group.append(board.table[tile[1]][tile[0]])
                     unopened_groups.append(current_group)
+                """
+
+                for i in range(len(unopened_groups)):
+                    print(len(unopened_groups[i]))
+                    print(len(unopened_neighbour_groups[i]))
 
                 for i, group in enumerate(unopened_groups):
-                    optimal_choice_ai(board, unopened_cells, unopened_neighbour_groups[i], mines_left)
+                    optimal_choice_ai(board, group, unopened_neighbour_groups[i], mines_left)
                     for row in board.table:
                         for cell in row:
                             if cell.visible and cell.val == 9:
                                 print("Game over!")
                                 print("Press 'r' to try again or close the window to exit!")
                                 exit_game = True
-
-
-
 
         for row in board.table:  # Displays board
             for cell in row:
