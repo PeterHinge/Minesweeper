@@ -2,8 +2,6 @@ import random
 import itertools
 import pygame
 
-import time
-
 
 class Minefield:
 
@@ -209,7 +207,7 @@ def optimal_choice_ai(board, unopened_cells, unopened_neighbours, mines_left):  
 
         else:
             board.table[unopened_cells[lowest_change_of_mine_cell[0]].y][unopened_cells[lowest_change_of_mine_cell[0]].x].visible = True
-            print("50%: " + str([unopened_cells[lowest_change_of_mine_cell[0]].x, unopened_cells[lowest_change_of_mine_cell[0]].y]))
+            print(str(lowest_change_of_mine_cell[1]*100/len(valid_possible_states)) + "%: " + str([unopened_cells[lowest_change_of_mine_cell[0]].x, unopened_cells[lowest_change_of_mine_cell[0]].y]))
             return board
 ########################################################################################################################
 
@@ -261,7 +259,7 @@ def game(width, height, mines):  # Main game
                     exit_game = True
                     restart(width, height, mines)
 
-                elif event.key == pygame.K_c:  # Turn AI on/off event
+                elif event.key == pygame.K_a:  # Turn AI on/off event
                     if not ai_on:
                         ai_on = True
                     elif ai_on:
@@ -352,8 +350,6 @@ def game(width, height, mines):  # Main game
 
             if current_open_cell_count == open_cell_count and current_flag_count == flag_count:
 
-                time.sleep(3)
-
                 if current_flag_count == mines and len(ai_visited_cells) != width_of_board * height_of_board:
                     print("surrounded by mines")
                     for row in board.table:
@@ -378,10 +374,11 @@ def game(width, height, mines):  # Main game
                                             if board.table[tile[1]][tile[0]] not in unopened_neighbours:
                                                 unopened_neighbours.append(board.table[tile[1]][tile[0]])
 
+
                 unopened_groups = []
                 unopened_neighbour_groups = []
 
-                if len(unopened_cells) < 15:
+                if len(unopened_cells) < 20:
                     unopened_groups = [unopened_cells]
                     unopened_neighbour_groups = [unopened_neighbours]
 
@@ -441,7 +438,6 @@ def game(width, height, mines):  # Main game
                                     if board.table[tile[1]][tile[0]] not in current_group:
                                         current_group.append(board.table[tile[1]][tile[0]])
                     unopened_groups.append(current_group)
-                """
 
                 for i in range(len(unopened_groups)):
                     print(len(unopened_groups[i]))
@@ -452,6 +448,18 @@ def game(width, height, mines):  # Main game
                     for row in board.table:
                         for cell in row:
                             if cell.visible and cell.val == 9:
+                                print([cell.x, cell.y])
+                                print("Game over!")
+                                print("Press 'r' to try again or close the window to exit!")
+                                exit_game = True
+                """
+
+                if len(unopened_groups) > 0:
+                    optimal_choice_ai(board, unopened_groups[0], unopened_neighbour_groups[0], mines_left)
+                    for row in board.table:
+                        for cell in row:
+                            if cell.visible and cell.val == 9:
+                                print([cell.x, cell.y])
                                 print("Game over!")
                                 print("Press 'r' to try again or close the window to exit!")
                                 exit_game = True
