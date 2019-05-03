@@ -16,13 +16,10 @@ class Minefield:
 
         self.table = self.setup()
 
-    def __repr__(self):
-        print(self.table)
-
-    def setup(self):
+    def setup(self):  # Creates a grid of cells
         return [[Cell(x, y, self.scale) for x in range(self.width)] for y in range(self.height)]
 
-    def add_mines(self, cell):
+    def add_mines(self, cell):  # Adds mines
         adjacent_tiles = get_adjacent_tiles(cell.x, cell.y)
         starting_tiles = adjacent_tiles + [[cell.x, cell.y]]
         for i in range(self.mines):
@@ -34,7 +31,7 @@ class Minefield:
                     self.table[row][column].val = 9
                     is_mine = True
 
-    def adjust_table(self):
+    def adjust_table(self):  # Changes values in neighbouring cells
         for row in range(len(self.table)):
             for column in range(len(self.table[row])):
                 if self.table[row][column].val == 9:
@@ -71,9 +68,6 @@ class Cell:
         self.val = 0
         self.visible = False
         self.flag = False
-
-    def __repr__(self):
-        print(self.rect)
 
 
 def get_adjacent_tiles(x, y):  # Checks and return adjacent tiles
@@ -318,6 +312,7 @@ def game(width, height, mines):  # Main game
 
                             check_adjacent_tiles = True
                             adjacent_tiles = get_adjacent_tiles(cell.x, cell.y)
+
                             for tile in adjacent_tiles:
                                 if board.is_inside_table(adjacent_tiles[0][0], adjacent_tiles[0][1]):
                                     if not board.table[tile[1]][tile[0]].visible and not board.table[tile[1]][tile[0]].flag:
@@ -343,10 +338,19 @@ def game(width, height, mines):  # Main game
 
             for row in board.table:
                 for cell in row:
-                    if cell.visible:
-                        current_open_cell_count += 1
+
                     if cell.flag:
                         current_flag_count += 1
+
+                    if cell.visible:
+                        current_open_cell_count += 1
+
+                        if cell.val == 9:
+                            print("Losing move" + str([cell.x, cell.y]))
+                            print("Game over!")
+                            print("Press 'r' to try again or close the window to exit!")
+                            exit_game = True
+                            break
 
             if current_open_cell_count == open_cell_count and current_flag_count == flag_count:
 
@@ -459,10 +463,11 @@ def game(width, height, mines):  # Main game
                     for row in board.table:
                         for cell in row:
                             if cell.visible and cell.val == 9:
-                                print([cell.x, cell.y])
+                                print("Losing move" + str([cell.x, cell.y]))
                                 print("Game over!")
                                 print("Press 'r' to try again or close the window to exit!")
                                 exit_game = True
+                                break
 
         for row in board.table:  # Displays board
             for cell in row:
