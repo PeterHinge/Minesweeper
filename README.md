@@ -1,5 +1,19 @@
 # Minesweeper
-Minesweeper including AI (com-player)
+Minesweeper including AI 
+
+Normal Minesweeper 
+
+Minesweeper 2.0 includes probabilistic AI
+
+How to play:
+
+Works like normal minesweeper ('r' to restart, 'a' to enable/disable AI)
+
+Requirements:
+
+Python 3.6
+
+PyGame 1.9
 
 _______________________________________________________
 Plan:
