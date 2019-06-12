@@ -1,8 +1,6 @@
 # Minesweeper
 Minesweeper including AI 
 
-Normal Minesweeper 
-
 Minesweeper 2.0 includes probabilistic AI
 
 How to play:
