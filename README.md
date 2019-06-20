@@ -2,16 +2,14 @@
 Minesweeper including AI 
 
 Minesweeper 2.0 includes probabilistic AI
+<br>Here is an article that explains how the AI works: https://luckytoilet.wordpress.com/2012/12/23/2125/
 
 How to play:
-
-Works like normal minesweeper ('r' to restart, 'a' to enable/disable AI)
+<br>Works like normal minesweeper ('r' to restart, 'a' to enable/disable AI)
 
 Requirements:
-
-Python 3.6
-
-PyGame 1.9
+<br>Python 3.6
+<br>PyGame 1.9
 
 _______________________________________________________
 Plan:
