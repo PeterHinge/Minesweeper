@@ -88,7 +88,7 @@ def script():
                                 if [x, y] not in unopened_neighbours_coord:
                                     unopened_neighbours_coord.append([x, y])
 
-                        if len(unopened_cells_coord) >= 100:
+                        if len(unopened_cells_coord) >= 10:
                             unopened_cells_coord_group.append(unopened_cells_coord)
                             unopened_neighbours_coord_group.append(unopened_neighbours_coord)
                             unopened_cells_coord = []
