@@ -11,6 +11,8 @@ Requirements:
 <br>Python 3.6
 <br>PyGame 1.9
 
+(Note: Solver does not have any documentation as it was meant as just a quick script to have fun)
+
 _______________________________________________________
 Plan:
 <br>2019-03-25: Want to create basic minesweeper program to play including having an AI to play for you.
